@@ -11,6 +11,8 @@ import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
 object Main extends MainRoutes:
+  override def host: String = "0.0.0.0"
+
   // Redis client information
   given ActorSystem = ActorSystem()
   val redisHost     = sys.env.getOrElse("REDIS_HOST", "localhost")
@@ -60,12 +62,12 @@ object Main extends MainRoutes:
   def addTodo(task: ujson.Value) =
     val insert = (todos returning todos.map(x => x.id)) += Todo(
       None,
-      task("task").str,
+      task.str,
       done = false
     )
     val insertFut = db.run(insert).flatMap: newId =>
       redis.del("todos").map: _ =>
-        Obj("id" -> newId, "task" -> task("task").str, "done" -> false)
+        Obj("id" -> newId, "task" -> task.str, "done" -> false)
     Await.result(insertFut, 5.seconds)
   end addTodo
 

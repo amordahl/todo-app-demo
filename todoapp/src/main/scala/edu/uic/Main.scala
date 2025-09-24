@@ -14,13 +14,15 @@ object Main extends MainRoutes:
   override def host: String = "0.0.0.0"
 
   // Postgres db info
-  val dbUrl = "jdbc:postgresql://localhost:5432/todos"
-  val dbUser = "postgres"
-  val dbPass = "postgres"
+  val dbUrl  = sys.env.getOrElse("DATABASE_URL", "jdbc:postgresql://localhost:5432/todos")
+  val dbUser = sys.env.getOrElse("DATABASE_USER", "postgres")
+  val dbPass = sys.env.get("DATABASE_PASSWORD_FILE").map: path =>
+    scala.io.Source.fromFile(path).getLines().mkString.trim
+
   val db = Database.forURL(
     dbUrl,
     user = dbUser,
-    password = dbPass,
+    password = dbPass.get,
     driver = "org.postgresql.Driver"
   )
 
